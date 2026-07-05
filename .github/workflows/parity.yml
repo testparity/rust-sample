@@ -21,14 +21,27 @@ jobs:
           php-version: '8.4'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, fileinfo, json
 
-      - name: Install Parity
+      - name: Configure Parity credentials
         env:
+          PARITY_CI_SSH_KEY: ${{ secrets.PARITY_CI_SSH_KEY }}
           PARITY_CI_TOKEN: ${{ secrets.PARITY_CI_TOKEN }}
         run: |
-          if [ -n "$PARITY_CI_TOKEN" ]; then
+          if [ -n "$PARITY_CI_SSH_KEY" ]; then
+            mkdir -p ~/.ssh
+            printf '%s\n' "$PARITY_CI_SSH_KEY" > ~/.ssh/id_ed25519
+            chmod 600 ~/.ssh/id_ed25519
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            composer global config repositories.parity vcs git@github.com:testparity/cli.git
+          elif [ -n "$PARITY_CI_TOKEN" ]; then
             composer global config github-oauth.github.com "$PARITY_CI_TOKEN"
+            composer global config repositories.parity vcs https://github.com/testparity/cli
+          else
+            echo "::error::Set PARITY_CI_TOKEN or PARITY_CI_SSH_KEY so Composer can install private testparity/cli."
+            exit 1
           fi
-          composer global config repositories.parity vcs https://github.com/testparity/cli
+
+      - name: Install Parity
+        run: |
           composer global require testparity/parity:dev-main --prefer-dist --no-progress --no-interaction
           echo "$HOME/.composer/vendor/bin" >> "$GITHUB_PATH"
 
