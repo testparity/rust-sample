@@ -26,4 +26,4 @@ The GitHub Actions workflow installs Parity during CI and then runs:
 parity check --config=parity.yaml --format=json
 ```
 
-Because the Parity CLI repository is currently private, configure a repository secret named `PARITY_CI_TOKEN` with read access to `testparity/cli`. This can be removed once Parity is available from a public Composer package or release artifact.
+Because the Parity CLI repository is currently private, configure either `PARITY_CI_TOKEN` with read access to `testparity/cli` or `PARITY_CI_SSH_KEY` with an SSH key that can read `testparity/cli`. This can be removed once Parity is available from a public Composer package or release artifact.
