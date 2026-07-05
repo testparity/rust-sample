@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage xmlns="https://schema.phpunit.de/coverage/1.0">
+  <file name="lib.rs" path="src">
+    <totals>
+      <lines total="10" comments="0" code="10" executable="10" executed="7" percent="70.00"/>
+    </totals>
+    <coverage>
+      <line nr="1"><covered by="lib_test::coversPrimaryBehavior"/></line>
+      <line nr="2"><covered by="lib_test::coversPrimaryBehavior"/></line>
+      <line nr="3"><covered by="lib_test::coversPrimaryBehavior"/><covered by="libIntegrationTest::coversThroughPublicWorkflow"/></line>
+      <line nr="4"><covered by="lib_test::coversPrimaryBehavior"/><covered by="libIntegrationTest::coversThroughPublicWorkflow"/></line>
+      <line nr="5"><covered by="libIntegrationTest::coversThroughPublicWorkflow"/></line>
+      <line nr="6"><covered by="libIntegrationTest::coversThroughPublicWorkflow"/></line>
+      <line nr="7"><covered by="libIntegrationTest::coversThroughPublicWorkflow"/><covered by="libSmokeTest::coversBootstrapPath"/></line>
+    </coverage>
+  </file>
+</coverage>
