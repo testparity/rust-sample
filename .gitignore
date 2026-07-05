@@ -1,0 +1,6 @@
+vendor/
+node_modules/
+target/
+.nyc_output/
+.phpunit.result.cache
+.DS_Store
