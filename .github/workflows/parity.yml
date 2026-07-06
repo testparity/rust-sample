@@ -23,8 +23,7 @@ jobs:
 
       - name: Install Parity
         run: |
-          composer global config repositories.parity vcs https://github.com/testparity/cli
-          composer global require testparity/parity:dev-main --prefer-dist --no-progress --no-interaction
+          composer global require testparity/parity --prefer-dist --no-progress --no-interaction
           echo "$HOME/.composer/vendor/bin" >> "$GITHUB_PATH"
 
       - name: Run Parity

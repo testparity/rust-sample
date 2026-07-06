@@ -26,8 +26,7 @@ Parity enforces these thresholds in `parity.yaml`:
 Install Parity from the public CLI repository:
 
 ```bash
-composer global config repositories.parity vcs https://github.com/testparity/cli
-composer global require testparity/parity:dev-main
+composer global require testparity/parity
 ```
 
 Run the Parity proof:
