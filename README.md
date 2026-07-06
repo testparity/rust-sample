@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://testparity.com/brand/testparity-readme-banner.jpg" alt="TestParity" width="100%">
+</p>
+
 # Rust Sample
 
 [![Parity Sample](https://github.com/testparity/rust-sample/actions/workflows/parity.yml/badge.svg)](https://github.com/testparity/rust-sample/actions/workflows/parity.yml)
