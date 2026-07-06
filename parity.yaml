@@ -7,7 +7,7 @@ settings:
   test_extension: ".rs"
   namespace_separator: "::"
 
-coverage_xml: coverage-xml
+coverage_xml: parity-coverage.json
 min_coverage: 70
 min_coverage_global: 80
 min_matched_coverage: 40

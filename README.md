@@ -4,7 +4,7 @@ This repository is a focused Parity demo for Rust. It intentionally separates ag
 
 ## What this sample proves
 
-The checked-in PHPUnit XML-style fixture in `coverage-xml/` contains per-line test attribution. Parity reads that attribution and reports both all-test file coverage and how much of each source file is covered by its matching test file.
+The checked-in language-neutral `parity-coverage.json` fixture contains per-line test attribution. Parity reads that attribution and reports both all-test file coverage and how much of each source file is covered by its matching test file.
 
 | Source file | Matching test | All-test file coverage | Matching-test coverage | Other covering tests | Why it matters |
 | --- | --- | ---: | ---: | ---: | --- |
