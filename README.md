@@ -23,11 +23,11 @@ Parity enforces these thresholds in `parity.yaml`:
 - `min_coverage_global: 80` proves the overall project can be at a release-ready level.
 - `minimum-coverage: 70` allows the intentionally weaker file to pass while still surfacing its exact percentage.
 - `matched-coverage: 40` proves Parity can distinguish the matching test from incidental coverage.
-- `coverage-attribution` is added automatically for the PHPUnit XML fixture and reports the number of covering tests plus how many are non-matching.
+- `coverage-attribution` is added automatically for the Parity JSON attribution fixture and reports the number of covering tests plus how many are non-matching.
 
 ## Run locally
 
-Install Parity from the public CLI repository:
+Install the public package from Packagist:
 
 ```bash
 composer global require testparity/parity
@@ -47,7 +47,7 @@ Expected highlights from the JSON output:
 
 ## CI
 
-GitHub Actions installs Parity from the public `testparity/cli` repository, runs any native sample test step for this ecosystem, and then runs:
+GitHub Actions installs `testparity/parity` from Packagist, runs any native sample test step for this ecosystem, and then runs:
 
 ```bash
 parity check --config=parity.yaml --format=json
