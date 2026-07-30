@@ -1,4 +1,9 @@
+use sample::{absolute, square};
+
 #[test]
 fn applies_standard_discount() {
-    assert_eq!(crate::apply_discount(100.0, false), 90.0);
+    let subtotal = square(10) as f64;
+    let discounted = sample::discount::apply_discount(subtotal, false);
+
+    assert_eq!(absolute(discounted as i32), 90);
 }

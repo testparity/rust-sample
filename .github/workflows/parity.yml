@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   parity:
     name: Install and run Parity
@@ -15,6 +18,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Run sample tests
+        run: cargo test --locked
+
       - name: Setup PHP for Parity
         uses: shivammathur/setup-php@v2
         with:
@@ -23,8 +37,26 @@ jobs:
 
       - name: Install Parity
         run: |
-          composer global require testparity/parity --prefer-dist --no-progress --no-interaction
-          echo "$HOME/.composer/vendor/bin" >> "$GITHUB_PATH"
+          composer global require "testparity/parity:^1.2" --prefer-dist --no-progress --no-interaction
+          composer global config bin-dir --absolute >> "$GITHUB_PATH"
 
-      - name: Run Parity
-        run: parity check --config=parity.yaml --format=json
+      - name: Remove stale coverage evidence
+        run: |
+          rm -rf -- .parity
+          test ! -e parity-coverage.json
+
+      - name: Generate and check per-test coverage
+        run: |
+          set -o pipefail
+          parity test --config=parity.yaml --format=json --show-tests | tee parity-result.json
+
+      - name: Upload fresh Parity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-per-test-evidence
+          path: |
+            .parity/per-test
+            parity-result.json
+          if-no-files-found: warn
+          retention-days: 14

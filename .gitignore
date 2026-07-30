@@ -1,6 +1,3 @@
-vendor/
-node_modules/
+.parity/
+parity-result.json
 target/
-.nyc_output/
-.phpunit.result.cache
-.DS_Store

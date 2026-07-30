@@ -7,10 +7,16 @@ settings:
   test_extension: ".rs"
   namespace_separator: "::"
 
-coverage_xml: parity-coverage.json
+coverage_xml: .parity/per-test
 min_coverage: 70
 min_coverage_global: 80
 min_matched_coverage: 40
+
+test:
+  command: 'cargo llvm-cov --locked --cobertura --output-path {coverage} --test "$(basename {test} .rs)"'
+  coverage: ".parity/tmp/{slug}.xml"
+  reports: ".parity/per-test"
+  timeout: 300
 
 structure:
   - name: "Rust Library"
