@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Weekly run catches breakage from new dependency releases and advisories.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
