@@ -17,6 +17,8 @@ jobs:
   parity:
     name: Install and run Parity
     runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.parity-upload.outputs.artifact-id }}
 
     steps:
       - name: Checkout
@@ -41,7 +43,7 @@ jobs:
 
       - name: Install Parity
         run: |
-          composer global require "testparity/parity:^1.2" --prefer-dist --no-progress --no-interaction
+          composer global require "testparity/parity:1.3.0" --prefer-dist --no-progress --no-interaction
           composer global config bin-dir --absolute >> "$GITHUB_PATH"
 
       - name: Remove stale coverage evidence
@@ -52,15 +54,33 @@ jobs:
       - name: Generate and check per-test coverage
         run: |
           set -o pipefail
-          parity test --config=parity.yaml --format=json --show-tests | tee parity-result.json
+          parity test --config=parity.yaml --no-check
+          test -s .parity/per-test/index.json
+          markdown_status=0
+          parity check --config=parity.yaml --format=github > parity-comment.md || markdown_status=$?
+          parity check --config=parity.yaml --format=json --show-tests > parity-result.json
+          exit "$markdown_status"
 
       - name: Upload fresh Parity evidence
-        if: always()
+        id: parity-upload
+        if: ${{ always() && hashFiles('parity-result.json') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: parity-per-test-evidence
           path: |
             .parity/per-test
             parity-result.json
+            parity-comment.md
+          include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14
+
+  parity-comment:
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && needs.parity.outputs.artifact-id != '' }}
+    needs: parity
+    permissions:
+      pull-requests: write
+    uses: testparity/cli/.github/workflows/parity-comment.yml@v1.3.0
+    with:
+      artifact-name: parity-per-test-evidence
+      report-path: parity-comment.md
