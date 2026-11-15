@@ -41,25 +41,27 @@ jobs:
           php-version: '8.4'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, fileinfo, json
 
-      - name: Install Parity
-        run: |
-          composer global require "testparity/parity:1.4.1" --prefer-dist --no-progress --no-interaction
-          composer global config bin-dir --absolute >> "$GITHUB_PATH"
-
       - name: Remove stale coverage evidence
         run: |
           rm -rf -- .parity
           test ! -e parity-coverage.json
 
-      - name: Generate and check per-test coverage
+      - name: Run TestParity
+        id: parity-report
+        uses: testparity/actions@10454fb309cc104296ec001fade186d9330abe65 # v1.1.0
+        with:
+          post-on-pr: 'false'
+          show-tests: 'true'
+
+      - name: Stage TestParity reports
+        id: stage-parity
+        if: ${{ !cancelled() && steps.parity-report.outputs.report-directory != '' }}
+        env:
+          REPORT_DIRECTORY: ${{ steps.parity-report.outputs.report-directory }}
         run: |
-          set -o pipefail
-          parity test --config=parity.yaml --no-check
           test -s .parity/per-test/index.json
-          markdown_status=0
-          parity check --config=parity.yaml --format=github > parity-comment.md || markdown_status=$?
-          parity check --config=parity.yaml --format=json --show-tests > parity-result.json
-          exit "$markdown_status"
+          cp "$REPORT_DIRECTORY/report.md" parity-comment.md
+          cp "$REPORT_DIRECTORY/report.json" parity-result.json
 
       - name: Upload fresh Parity evidence
         id: parity-upload
@@ -80,7 +82,7 @@ jobs:
     needs: parity
     permissions:
       pull-requests: write
-    uses: testparity/cli/.github/workflows/parity-comment.yml@18489a20181f4d012a93563481e179a6b8b23ecc # v1.4.1
+    uses: testparity/actions/.github/workflows/parity-comment.yml@10454fb309cc104296ec001fade186d9330abe65 # v1.1.0
     with:
       artifact-name: parity-per-test-evidence
       report-path: parity-comment.md
