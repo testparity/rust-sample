@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Parity
         run: |
-          composer global require "testparity/parity:1.3.0" --prefer-dist --no-progress --no-interaction
+          composer global require "testparity/parity:1.4.1" --prefer-dist --no-progress --no-interaction
           composer global config bin-dir --absolute >> "$GITHUB_PATH"
 
       - name: Remove stale coverage evidence
@@ -80,7 +80,7 @@ jobs:
     needs: parity
     permissions:
       pull-requests: write
-    uses: testparity/cli/.github/workflows/parity-comment.yml@v1.3.0
+    uses: testparity/cli/.github/workflows/parity-comment.yml@18489a20181f4d012a93563481e179a6b8b23ecc # v1.4.1
     with:
       artifact-name: parity-per-test-evidence
       report-path: parity-comment.md
