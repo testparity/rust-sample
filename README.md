@@ -51,3 +51,5 @@ The expected result is `passed = true`, `global_coverage = 84.21`, and the file-
 ## CI
 
 GitHub Actions installs Rust and `cargo-llvm-cov`, runs the complete locked Cargo suite, installs public `testparity/parity:^1.2`, and executes `parity test`. The generated `.parity/per-test` directory and JSON result are uploaded as the `parity-per-test-evidence` artifact for 14 days. No private token is required.
+
+[![advertisement](https://ads.servead.net/i/fa0e1bc6-f823-490a-92ea-2ed886b65bcc.svg)](https://ads.servead.net/c/fa0e1bc6-f823-490a-92ea-2ed886b65bcc)
