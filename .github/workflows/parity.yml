@@ -14,15 +14,17 @@ permissions:
   contents: read
 
 jobs:
-  parity:
-    name: Install and run Parity
+  baseline:
+    name: Generate base coverage report
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
-    outputs:
-      artifact-id: ${{ steps.parity-upload.outputs.artifact-id }}
-
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -46,12 +48,80 @@ jobs:
           rm -rf -- .parity
           test ! -e parity-coverage.json
 
-      - name: Run TestParity
-        id: parity-report
-        uses: testparity/actions@10454fb309cc104296ec001fade186d9330abe65 # v1.1.0
+      - name: Generate baseline report
+        id: parity-baseline
+        uses: testparity/actions@30a4e2de4295df73868d1d184ff704f0dad3de2e # baseline regression gate
         with:
           post-on-pr: 'false'
           show-tests: 'true'
+          fail-on-findings: 'false'
+
+      - name: Stage baseline report
+        env:
+          REPORT_DIRECTORY: ${{ steps.parity-baseline.outputs.report-directory }}
+        run: |
+          test -s "$REPORT_DIRECTORY/report.json"
+          cp "$REPORT_DIRECTORY/report.json" parity-baseline.json
+
+      - name: Upload base report
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-base-evidence
+          path: parity-baseline.json
+          if-no-files-found: error
+          retention-days: 14
+
+  parity:
+    name: Install and run Parity
+    needs: baseline
+    if: ${{ !cancelled() && (needs.baseline.result == 'success' || needs.baseline.result == 'skipped') }}
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.parity-upload.outputs.artifact-id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Run sample tests
+        run: cargo test --locked
+
+      - name: Setup PHP for Parity
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, fileinfo, json
+
+      - name: Remove stale coverage evidence
+        run: |
+          rm -rf -- .parity
+          test ! -e parity-coverage.json
+
+      - name: Download base report
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: parity-base-evidence
+          path: .parity/baseline
+
+      - name: Run TestParity
+        id: parity-report
+        uses: testparity/actions@30a4e2de4295df73868d1d184ff704f0dad3de2e # baseline regression gate
+        with:
+          post-on-pr: 'false'
+          show-tests: 'true'
+          baseline-report: ${{ github.event_name == 'pull_request' && '.parity/baseline/parity-baseline.json' || '' }}
 
       - name: Stage TestParity reports
         id: stage-parity
@@ -62,10 +132,13 @@ jobs:
           test -s .parity/per-test/index.json
           cp "$REPORT_DIRECTORY/report.md" parity-comment.md
           cp "$REPORT_DIRECTORY/report.json" parity-result.json
+          if [ -f "$REPORT_DIRECTORY/baseline-comparison.json" ]; then
+            cp "$REPORT_DIRECTORY/baseline-comparison.json" parity-baseline-comparison.json
+          fi
 
       - name: Upload fresh Parity evidence
         id: parity-upload
-        if: ${{ always() && hashFiles('parity-result.json') != '' }}
+        if: ${{ !cancelled() && steps.stage-parity.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: parity-per-test-evidence
@@ -73,8 +146,9 @@ jobs:
             .parity/per-test
             parity-result.json
             parity-comment.md
+            parity-baseline-comparison.json
           include-hidden-files: true
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
 
   parity-comment:
@@ -82,7 +156,7 @@ jobs:
     needs: parity
     permissions:
       pull-requests: write
-    uses: testparity/actions/.github/workflows/parity-comment.yml@10454fb309cc104296ec001fade186d9330abe65 # v1.1.0
+    uses: testparity/actions/.github/workflows/parity-comment.yml@30a4e2de4295df73868d1d184ff704f0dad3de2e # baseline regression gate
     with:
       artifact-name: parity-per-test-evidence
       report-path: parity-comment.md
